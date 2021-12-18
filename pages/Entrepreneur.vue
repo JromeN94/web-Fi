@@ -1,280 +1,241 @@
 <template>
-  <v-card>
-    <v-card-title>
-      ข้อมูลผู้ประกอบการ (Entrepreneur)
-      <v-spacer></v-spacer><v-spacer /><v-spacer /><v-spacer />
-      <v-text-field
-        v-model="search"
-        append-icon="mdi-magnify"
-        label="ค้นหา"
-        single-line
-        hide-details
-      ></v-text-field>
-    </v-card-title>
-    <nav>
-      <div class="nav justify-content-center" id="nav-tab" role="tablist">
-        <a
-          class="nav-item nav-link active"
-          id="nav-home-tab"
-          data-toggle="tab"
-          href="#nav-ชา"
-          role="tab"
-          aria-controls="nav-ชา"
-          aria-selected="true"
-          >ชา</a>
-        <a
-          class="nav-item nav-link"
-          id="nav-profile-tab"
-          data-toggle="tab"
-          href="#nav-กาแฟ"
-          role="tab"
-          aria-controls="nav-กาแฟ"
-          aria-selected="false"
-          >กาแฟ</a>
-        <a
-          class="nav-item nav-link"
-          id="nav-contact-tab"
-          data-toggle="tab"
-          href="#nav-อาหารอื่นๆ"
-          role="tab"
-          aria-controls="nav-อาหารอื่นๆ"
-          aria-selected="false"
-          >อาหารอื่นๆ</a>
-      </div>
-    </nav>
-    <div class="container">
-      <div class="row">
-        <!-- Team member -->
-        <div class="col-xs-12 col-sm-6 col-md-4">
-          <div class="image-flip">
-            <div class="mainflip flip-0">
-              <div class="frontside">
-                <div class="card">
-                  <div class="card-body text-center">
-                    <p>
-                      <img class="img-fluid" src="38.jpg" alt="card image" />
-                    </p>
-                    <h4 class="card-title">ชื่อ-นามสกุล :</h4>
-                    <p class="card-text">ชื่อสถานประกอบการ : </p>
-                    <p class="card-text">ชื่อผลิตภัณฑ์ : </p>
-                    <a
-                      href="https://www.fiverr.com/share/qb8D02"
-                      class="btn btn-primary btn-sm"
-                      ><i class="fa fa-plus"></i
-                    ></a>
-                  </div>
-                </div>
-              </div>
-              <div class="backside">
-                <div class="card">
-                  <div class="card-body text-center mt-4">
-                    <h4 class="card-title">ข้อมูลเพิ่มเติม</h4>
-                    <p class="card-text">ชื่อ-นามสกุล : </p>
-                    <p class="card-text">ชื่อสถานประกอบการ : </p>
-                    <p class="card-text">ความเชี่ยวชาญ : </p>
-                    <p class="card-text">ผลงาน : </p>
-                    <p class="card-text">ชื่อผลิตภัณฑ์ : </p>
-                    <p class="card-text">รายละเอียดผลิตภัณฑ์  : </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- ./Team member -->
-      </div>
-    </div>
-  </v-card>
+  <v-data-table
+    :headers="headers"
+    :items="enlist"
+    sort-by="calories"
+    class="elevation-1"
+  >
+    <template v-slot:top>
+      <v-toolbar flat>
+        <v-toolbar-title>ข้อมูลผู้ประกอบการ</v-toolbar-title>
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-spacer></v-spacer>
+
+         <!-- search button -->
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
+
+    <!-- UPDATE button-->
+        <v-dialog v-model="dialog" max-width="500px">
+          <!-- NewItem button-->
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
+              เพิ่มข้อมูล
+            </v-btn>
+          </template>
+
+          <v-card>
+            <v-card-title>
+              <span class="text-h5">{{ formTitle }}</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <!-- table details -->
+                <v-col>
+                  <h4>1. ข้อมูลส่วนตัว</h4>
+                </v-col>
+                <v-row>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.En_id"
+                      label="ลำดับที่"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.En_name"
+                      label="ชื่อ-นามสกุล"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.En_address"
+                      label="ที่อยู่"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.En_tel"
+                      label="เบอร์โทร"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.En_email"
+                      label="E-mail"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+                <!-- ข้อมูลธุรกิจ -->
+                <v-col>
+                  <h4>2.ข้อมูลธุรกิจ</h4>
+                </v-col>
+                <v-row>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.En_orgID"
+                      label="ชื่อสถานประกอบการ"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.Birthdate"
+                      label="ประเภทธุรกิจ(ชา,กาแฟ,อาหารอื่น)"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.TY_Area"
+                      label="ชื่อผลิตภัณฑ์"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.TY_Area"
+                      label="รายละเอียดผลิตภัณฑ์"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="close"> Cancel </v-btn>
+              <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="dialogDelete" max-width="500px">
+          <v-card>
+            <v-card-title class="text-h5"
+              >Are you sure you want to delete this item?</v-card-title>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="closeDelete"
+                >Cancel</v-btn
+              >
+              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
+                >OK</v-btn
+              >
+              <v-spacer></v-spacer>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-toolbar>
+    </template>
+    <template v-slot:item.actions="{ item }">
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
-const url = "/network.json";
+const url = "http://localhost:5000/api/entrepreneur";
 export default {
-  data() {
-    return {
-      data: null,
-      search: "",
-      headers: [
-        { text: "ลำดับที่",value: "network_ID",},
-        { text: "ชื่อหน่วยงาน", value: "network_name" },
-        { text: "Website /Facebook", value: "network_website" },
-        { text: "รายละเอียดการให้บริการ", value: "network_service" },
-        { text: "หมายเหตุ", value: "note" },
-      ],
-    };
+  data: () => ({
+    dialog: false,
+    dialogDelete: false,
+    headers: [
+      { text: "ลำดับที่",value: "En_id" },
+      { text: "ชื่อผู้ประกอบการ", value: "En_name" },
+      { text: "สถานที่ประกอบการ", value: "En_orgID" },
+      { text: "เบอร์โทร", value: "En_tel" },
+      { text: "E-mail", value: "En_email" },
+      { text: "Facebook", value: "En_facebook" },
+      { text: "ที่อยู่", value: "En_address" },
+      { text: "Actions", value: "actions", sortable: false },
+    ],
+    enlist: [],
+    editedIndex: -1,
+    editedItem: {
+      name: "",
+      calories: 0,
+      fat: 0,
+      carbs: 0,
+      protein: 0,
+    },
+    defaultItem: {
+      name: "",
+      calories: 0,
+      fat: 0,
+      carbs: 0,
+      protein: 0,
+    },
+  }),
+
+  computed: {
+    formTitle() {
+      return this.editedIndex === -1 ? "New Item" : "Edit Item";
+    },
   },
-  async mounted() {
-    try {
-      const res = await this.$axios.get(url);
-      //console.log(res.data);
-      this.data = res.data;
-    } catch (e) {
-      console.error(e);
-    }
+
+  watch: {
+    dialog(val) {
+      val || this.close();
+    },
+    dialogDelete(val) {
+      val || this.closeDelete();
+    },
+  },
+
+  created() {
+    this.initialize();
+  },
+
+  methods: {
+    async initialize() {
+        const res = await this.$axios.get(url);
+        this.enlist = res.data.response;
+    },
+
+    editItem(item) {
+      this.editedIndex = this.enlist.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+
+    deleteItem(item) {
+      this.editedIndex = this.enlist.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogDelete = true;
+    },
+
+    deleteItemConfirm() {
+      this.enlist.splice(this.editedIndex, 1);
+      this.closeDelete();
+    },
+
+    close() {
+      this.dialog = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+
+    closeDelete() {
+      this.dialogDelete = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+
+    save() {
+      if (this.editedIndex > -1) {
+        Object.assign(this.enlist[this.editedIndex], this.editedItem);
+      } else {
+        this.enlist.push(this.editedItem);
+      }
+      this.close();
+    },
   },
 };
 </script>
-
-<style>
-/* FontAwesome for working BootSnippet :> */
-
-@import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css");
-
-/* style card */
-#team {
-  background: #eee !important;
-}
-
-section {
-  padding: 60px 0;
-}
-
-section .section-title {
-  text-align: center;
-  color: #007b5e;
-  margin-bottom: 50px;
-  text-transform: uppercase;
-}
-
-#team .card {
-  border: none;
-  background: #ffffff;
-}
-
-.image-flip:hover .backside,
-.image-flip.hover .backside {
-  -webkit-transform: rotateY(0deg);
-  -moz-transform: rotateY(0deg);
-  -o-transform: rotateY(0deg);
-  -ms-transform: rotateY(0deg);
-  transform: rotateY(0deg);
-  border-radius: 0.25rem;
-}
-
-.image-flip:hover .frontside,
-.image-flip.hover .frontside {
-  -webkit-transform: rotateY(180deg);
-  -moz-transform: rotateY(180deg);
-  -o-transform: rotateY(180deg);
-  transform: rotateY(180deg);
-}
-
-.mainflip {
-  -webkit-transition: 1s;
-  -webkit-transform-style: preserve-3d;
-  -ms-transition: 1s;
-  -moz-transition: 1s;
-  -moz-transform: perspective(1000px);
-  -moz-transform-style: preserve-3d;
-  -ms-transform-style: preserve-3d;
-  transition: 1s;
-  transform-style: preserve-3d;
-  position: relative;
-}
-
-.frontside {
-  position: relative;
-  -webkit-transform: rotateY(0deg);
-  -ms-transform: rotateY(0deg);
-  z-index: 2;
-  margin-bottom: 30px;
-}
-
-.backside {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background: white;
-  -webkit-transform: rotateY(-180deg);
-  -moz-transform: rotateY(-180deg);
-  -o-transform: rotateY(-180deg);
-  -ms-transform: rotateY(-180deg);
-  transform: rotateY(-180deg);
-  -webkit-box-shadow: 5px 7px 9px -4px rgb(158, 158, 158);
-  -moz-box-shadow: 5px 7px 9px -4px rgb(158, 158, 158);
-  box-shadow: 5px 7px 9px -4px rgb(158, 158, 158);
-}
-
-.frontside,
-.backside {
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  -ms-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-transition: 1s;
-  -webkit-transform-style: preserve-3d;
-  -moz-transition: 1s;
-  -moz-transform-style: preserve-3d;
-  -o-transition: 1s;
-  -o-transform-style: preserve-3d;
-  -ms-transition: 1s;
-  -ms-transform-style: preserve-3d;
-  transition: 1s;
-  transform-style: preserve-3d;
-}
-
-.frontside .card,
-.backside .card {
-  min-height: 250px;
-  min-width: 250px;
-}
-
-.backside .card a {
-  font-size: 18px;
-  color: #007b5e !important;
-}
-
-.frontside .card .card-title,
-.backside .card .card-title {
-  color: #007b5e !important;
-}
-
-.frontside .card .card-body img {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-}
-/* style card */
-
-/* style tab */
-.project-tab {
-    padding: 10%;
-    margin-top: -8%;
-}
-.project-tab #tabs{
-    background: #007b5e;
-    color: #eee;
-}
-.project-tab #tabs h6.section-title{
-    color: #eee;
-}
-.project-tab #tabs .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
-    color: #0062cc;
-    background-color: transparent;
-    border-color: transparent transparent #f3f3f3;
-    border-bottom: 3px solid !important;
-    font-size: 16px;
-    font-weight: bold;
-}
-.project-tab .nav-link {
-    border: 1px solid transparent;
-    border-top-left-radius: .25rem;
-    border-top-right-radius: .25rem;
-    color: #0062cc;
-    font-size: 16px;
-    font-weight: 600;
-}
-.project-tab .nav-link:hover {
-    border: none;
-}
-.project-tab thead{
-    background: #f3f3f3;
-    color: #333;
-}
-.project-tab a{
-    text-decoration: none;
-    color: #333;
-    font-weight: 600;
-}
-/* style tab */
-</style>
